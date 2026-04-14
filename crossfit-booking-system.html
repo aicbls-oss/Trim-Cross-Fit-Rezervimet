@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrossFit Class Reservations</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E85A28;
+            --secondary: #2D3142;
+            --accent: #FFD23F;
+            --bg: #F7F7F2;
+            --card: #FFFFFF;
+            --text: #2D3142;
+            --text-light: #6B6B6B;
+            --success: #4ECDC4;
+            --danger: #FF6B6B;
+            --border: #E0E0E0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--secondary);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+        
+        .header h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .nav-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nav-tab:hover {
+            color: var(--primary);
+        }
+        
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Date Selector */
+        .date-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .date-btn {
+            padding: 15px 25px;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .date-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+        }
+        
+        .date-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .date-btn .day {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .date-btn .date {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        /* Classes Grid */
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .class-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            border-color: var(--primary);
+        }
+        
+        .class-time {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        .class-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .capacity {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+        
+        .capacity-number {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+        
+        .capacity.full .capacity-number {
+            color: var(--danger);
+        }
+        
+        .capacity.almost-full .capacity-number {
+            color: var(--accent);
+        }
+        
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-badge.available {
+            background: rgba(78, 205, 196, 0.15);
+            color: var(--success);
+        }
+        
+        .status-badge.full {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+        }
+        
+        /* Member List */
+        .members-list {
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .member-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .member-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .waitlist-badge {
+            padding: 4px 10px;
+            background: var(--accent);
+            color: var(--secondary);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Booking Form */
+        .booking-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .booking-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .booking-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #1f2230;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Admin Panel */
+        .admin-controls {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .admin-controls h2 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            letter-spacing: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-value {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3rem;
+            color: var(--primary);
+            letter-spacing: 2px;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Messages */
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .message.success {
+            background: rgba(78, 205, 196, 0.15);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+        
+        .message.error {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .classes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .date-selector {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>CROSSFIT RESERVATIONS</h1>
+            <p>Book your spot. Push your limits.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('member')">Member Booking</button>
+            <button class="nav-tab" onclick="switchTab('admin')">Admin Dashboard</button>
+        </div>
+        
+        <!-- Member View -->
+        <div id="member-tab" class="tab-content active">
+            <div class="date-selector" id="dateSelector"></div>
+            <div class="classes-grid" id="classesGrid"></div>
+        </div>
+        
+        <!-- Admin View -->
+        <div id="admin-tab" class="tab-content">
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="admin-controls">
+                <h2>Add New Class</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="newClassDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" id="newClassTime">
+                    </div>
+                    <div class="form-group">
+                        <label>Capacity</label>
+                        <input type="number" id="newClassCapacity" value="15" min="1" max="30">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addClass()">Add Class</button>
+            </div>
+            
+            <div class="admin-controls">
+                <h2>All Classes</h2>
+                <div id="adminClassesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'crossfit-classes';
+        const BOOKINGS_KEY = 'crossfit-bookings';
+        
+        // Initialize storage
+        async function initStorage() {
+            try {
+                // Check if classes exist
+                const existingClasses = await window.storage.get(STORAGE_KEY);
+                if (!existingClasses) {
+                    // Create default classes for next 7 days
+                    const defaultClasses = [];
+                    const today = new Date();
+                    
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date(today);
+                        date.setDate(date.getDate() + i);
+                        const dateStr = date.toISOString().split('T')[0];
+                        
+                        // Morning class
+                        defaultClasses.push({
+                            id: `class-${dateStr}-06:00`,
+                            date: dateStr,
+                            time: '06:00',
+                            capacity: 15
+                        });
+                        
+                        // Midday class
+                        defaultClasses.push({
+                            id: `class-${dateStr}-12:00`,
+                            date: dateStr,
+                            time: '12:00',
+                            capacity: 15
+                        });
+                        
+                        // Evening class
+                        defaultClasses.push({
+                            id: `class-${dateStr}-18:00`,
+                            date: dateStr,
+                            time: '18:00',
+                            capacity: 15
+                        });
+                    }
+                    
+                    await window.storage.set(STORAGE_KEY, JSON.stringify(defaultClasses));
+                }
+                
+                // Initialize bookings if not exists
+                const existingBookings = await window.storage.get(BOOKINGS_KEY);
+                if (!existingBookings) {
+                    await window.storage.set(BOOKINGS_KEY, JSON.stringify({}));
+                }
+            } catch (error) {
+                console.error('Storage initialization error:', error);
+            }
+        }
+        
+        // Get classes
+        async function getClasses() {
+            try {
+                const result = await window.storage.get(STORAGE_KEY);
+                return result ? JSON.parse(result.value) : [];
+            } catch (error) {
+                console.error('Error getting classes:', error);
+                return [];
+            }
+        }
+        
+        // Save classes
+        async function saveClasses(classes) {
+            try {
+                await window.storage.set(STORAGE_KEY, JSON.stringify(classes));
+            } catch (error) {
+                console.error('Error saving classes:', error);
+            }
+        }
+        
+        // Get bookings
+        async function getBookings() {
+            try {
+                const result = await window.storage.get(BOOKINGS_KEY);
+                return result ? JSON.parse(result.value) : {};
+            } catch (error) {
+                console.error('Error getting bookings:', error);
+                return {};
+            }
+        }
+        
+        // Save bookings
+        async function saveBookings(bookings) {
+            try {
+                await window.storage.set(BOOKINGS_KEY, JSON.stringify(bookings));
+            } catch (error) {
+                console.error('Error saving bookings:', error);
+            }
+        }
+        
+        // Current selected date
+        let selectedDate = new Date().toISOString().split('T')[0];
+        
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'member') {
+                document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
+                document.getElementById('member-tab').classList.add('active');
+                renderMemberView();
+            } else {
+                document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
+                document.getElementById('admin-tab').classList.add('active');
+                renderAdminView();
+            }
+        }
+        
+        // Render date selector
+        async function renderDateSelector() {
+            const container = document.getElementById('dateSelector');
+            const classes = await getClasses();
+            const dates = [...new Set(classes.map(c => c.date))].sort();
+            
+            container.innerHTML = dates.map(date => {
+                const d = new Date(date + 'T00:00:00');
+                const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = d.getDate();
+                const month = d.toLocaleDateString('en-US', { month: 'short' });
+                
+                return `
+                    <button class="date-btn ${date === selectedDate ? 'active' : ''}" onclick="selectDate('${date}')">
+                        <span class="day">${dayName}</span>
+                        <span class="date">${dayNum} ${month}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+        
+        // Select date
+        function selectDate(date) {
+            selectedDate = date;
+            renderMemberView();
+        }
+        
+        // Render member view
+        async function renderMemberView() {
+            await renderDateSelector();
+            const classes = await getClasses();
+            const bookings = await getBookings();
+            const dayClasses = classes.filter(c => c.date === selectedDate).sort((a, b) => a.time.localeCompare(b.time));
+            
+            const container = document.getElementById('classesGrid');
+            
+            container.innerHTML = dayClasses.map(classItem => {
+                const classBookings = bookings[classItem.id] || { members: [], waitlist: [] };
+                const spotsLeft = classItem.capacity - classBookings.members.length;
+                const isFull = spotsLeft <= 0;
+                const isAlmostFull = spotsLeft <= 3 && spotsLeft > 0;
+                
+                return `
+                    <div class="class-card">
+                        <div class="class-time">${formatTime(classItem.time)}</div>
+                        <div class="class-info">
+                            <div class="capacity ${isFull ? 'full' : isAlmostFull ? 'almost-full' : ''}">
+                                <span class="capacity-number">${classBookings.members.length}/${classItem.capacity}</span>
+                                <span>Athletes</span>
+                            </div>
+                            <span class="status-badge ${isFull ? 'full' : 'available'}">
+                                ${isFull ? 'FULL' : `${spotsLeft} Spots Left`}
+                            </span>
+                        </div>
+                        
+                        ${classBookings.members.length > 0 ? `
+                            <div class="members-list">
+                                ${classBookings.members.map(member => `
+                                    <div class="member-item">
+                                        <div class="member-avatar">${member.charAt(0).toUpperCase()}</div>
+                                        <div class="member-name">${member}</div>
+                                        <button class="btn btn-danger" onclick="cancelBooking('${classItem.id}', '${member}')">Cancel</button>
+                                    </div>
+                                `).join('')}
+                                ${classBookings.waitlist.length > 0 ? `
+                                    <h4 style="margin-top: 15px; margin-bottom: 10px; color: var(--text-light);">Waitlist</h4>
+                                    ${classBookings.waitlist.map(member => `
+                                        <div class="member-item">
+                                            <div class="member-avatar">${member.charAt(0).toUpperCase()}</div>
+                                            <div class="member-name">${member}</div>
+                                            <span class="waitlist-badge">WAITLIST</span>
+                                            <button class="btn btn-danger" onclick="cancelBooking('${classItem.id}', '${member}', true)">Remove</button>
+                                        </div>
+                                    `).join('')}
+                                ` : ''}
+                            </div>
+                        ` : '<p style="color: var(--text-light); text-align: center; padding: 20px;">No bookings yet</p>'}
+                        
+                        <div class="booking-form">
+                            <input type="text" id="name-${classItem.id}" placeholder="Your name">
+                            <button class="btn btn-primary" onclick="bookClass('${classItem.id}')">
+                                ${isFull ? 'Join Waitlist' : 'Book Spot'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Book class
+        async function bookClass(classId) {
+            const input = document.getElementById(`name-${classId}`);
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+            
+            const classes = await getClasses();
+            const bookings = await getBookings();
+            const classItem = classes.find(c => c.id === classId);
+            
+            if (!classItem) return;
+            
+            if (!bookings[classId]) {
+                bookings[classId] = { members: [], waitlist: [] };
+            }
+            
+            // Check if already booked
+            if (bookings[classId].members.includes(name) || bookings[classId].waitlist.includes(name)) {
+                alert('You are already booked for this class');
+                return;
+            }
+            
+            // Add to members or waitlist
+            if (bookings[classId].members.length < classItem.capacity) {
+                bookings[classId].members.push(name);
+            } else {
+                bookings[classId].waitlist.push(name);
+            }
+            
+            await saveBookings(bookings);
+            input.value = '';
+            renderMemberView();
+        }
+        
+        // Cancel booking
+        async function cancelBooking(classId, name, isWaitlist = false) {
+            const bookings = await getBookings();
+            
+            if (!bookings[classId]) return;
+            
+            if (isWaitlist) {
+                bookings[classId].waitlist = bookings[classId].waitlist.filter(m => m !== name);
+            } else {
+                bookings[classId].members = bookings[classId].members.filter(m => m !== name);
+                
+                // Move first waitlist member to members
+                if (bookings[classId].waitlist.length > 0) {
+                    const nextMember = bookings[classId].waitlist.shift();
+                    bookings[classId].members.push(nextMember);
+                }
+            }
+            
+            await saveBookings(bookings);
+            renderMemberView();
+        }
+        
+        // Render admin view
+        async function renderAdminView() {
+            const classes = await getClasses();
+            const bookings = await getBookings();
+            
+            // Stats
+            const totalClasses = classes.length;
+            let totalBookings = 0;
+            let totalWaitlist = 0;
+            
+            Object.values(bookings).forEach(b => {
+                totalBookings += b.members.length;
+                totalWaitlist += b.waitlist.length;
+            });
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalClasses}</div>
+                    <div class="stat-label">Total Classes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalBookings}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalWaitlist}</div>
+                    <div class="stat-label">Waitlist Total</div>
+                </div>
+            `;
+            
+            // Classes list
+            const sortedClasses = [...classes].sort((a, b) => {
+                const dateCompare = a.date.localeCompare(b.date);
+                return dateCompare !== 0 ? dateCompare : a.time.localeCompare(b.time);
+            });
+            
+            document.getElementById('adminClassesList').innerHTML = sortedClasses.map(c => {
+                const classBookings = bookings[c.id] || { members: [], waitlist: [] };
+                return `
+                    <div class="class-card" style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="class-time" style="display: inline-block; margin-right: 20px;">${formatTime(c.time)}</div>
+                                <span style="color: var(--text-light);">${formatDate(c.date)}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="capacity">
+                                    <span class="capacity-number">${classBookings.members.length}/${c.capacity}</span>
+                                    <span>Booked</span>
+                                    ${classBookings.waitlist.length > 0 ? `<span style="color: var(--accent); margin-left: 10px;">(${classBookings.waitlist.length} waitlist)</span>` : ''}
+                                </div>
+                                <button class="btn btn-danger" style="margin-top: 10px;" onclick="deleteClass('${c.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Set default date for new class
+            document.getElementById('newClassDate').value = new Date().toISOString().split('T')[0];
+        }
+        
+        // Add class
+        async function addClass() {
+            const date = document.getElementById('newClassDate').value;
+            const time = document.getElementById('newClassTime').value;
+            const capacity = parseInt(document.getElementById('newClassCapacity').value);
+            
+            if (!date || !time || !capacity) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            const classes = await getClasses();
+            const newClass = {
+                id: `class-${date}-${time}`,
+                date,
+                time,
+                capacity
+            };
+            
+            // Check if class already exists
+            if (classes.find(c => c.id === newClass.id)) {
+                alert('A class already exists at this date and time');
+                return;
+            }
+            
+            classes.push(newClass);
+            await saveClasses(classes);
+            
+            document.getElementById('newClassTime').value = '';
+            renderAdminView();
+        }
+        
+        // Delete class
+        async function deleteClass(classId) {
+            if (!confirm('Are you sure you want to delete this class?')) return;
+            
+            const classes = await getClasses();
+            const bookings = await getBookings();
+            
+            const updatedClasses = classes.filter(c => c.id !== classId);
+            delete bookings[classId];
+            
+            await saveClasses(updatedClasses);
+            await saveBookings(bookings);
+            
+            renderAdminView();
+        }
+        
+        // Format time
+        function formatTime(time) {
+            const [hours, minutes] = time.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const displayHour = h % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+        
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        }
+        
+        // Initialize
+        async function init() {
+            await initStorage();
+            renderMemberView();
+        }
+        
+        init();
+    </script>
+</body>
+</html>
